@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <style>
+      .body {
+        text-align: center;
+      }
+      .center {
+        position: relative;
+        left: 50%;
+        transform: translate(-50%);
+      }
+    </style>
+  </head>
+  <body>
+    <form ref='uploadForm' 
+      id='uploadForm' 
+      action='/upload' 
+      method='post' 
+      encType="multipart/form-data"
+      class="center">
+      <div>
+        <label>Token:</label>
+        <input type="password" name="token" id="token">
+      </div>
+      <div>
+        <input type="file" name="sampleFile" />
+      </div>
+      <input type='submit' value='Upload!' />
+    </form>     
+  </body>
+</html>

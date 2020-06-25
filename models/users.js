@@ -7,10 +7,29 @@ const userSchema = new Schema({
   email: String,
   password: String,
   admin: Boolean,
-  allowshorturl: Boolean,
-  cdnToken: {
-    type: String,
-    default: ""
+  shorturl: {
+    allow: {
+      type: Boolean,
+      default: false,
+    },
+    allowPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    created: Array
+  },
+  cdn: {
+    allow: {
+	    type: Boolean,
+    	default: false
+    },
+    token: {
+	    type: String,
+    	default: ""
+    },
+    files: {
+      type: Array
+    }
   }
 })
 
