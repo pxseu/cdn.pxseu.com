@@ -1,6 +1,7 @@
 require('dotenv').config()
 
 const port = 6002
+const errorPages = [ "404_1.html", "404_2.html" ]
 
 const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser')
@@ -16,8 +17,7 @@ const app = express()
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true
+  useCreateIndex: true
 })
 //start mongodb
 
@@ -41,11 +41,13 @@ app.get('/', async (req, res)=> {
 app.use('/', (req, res) => {
   res.sendFile(__dirname + '/cdn' + req.url, (err) => {
     if (err){
-      res.sendStatus(404)
+      res.status(404).sendFile( __dirname + "/www/errors/" + errorPages[Math.floor(Math.random() * errorPages.length)] )
     }
   })  
 })
 
+
+
 app.listen(port, 'localhost', ()=> {
   console.log('Listening on port: ' + port)
-})
+});

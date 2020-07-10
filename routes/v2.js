@@ -11,11 +11,12 @@ router.get('/', (req, res) => {
 
 router.post('/upload', async (req, res) => {
     let token = req.header("ApiToken");
+
     const currentUser = await User.findOne({
         'cdn.token': token
     })
 
-    if (currentUser ==undefined || currentUser.cdn.allow == false) return res.status(401).json({ error: "You're not allowed to upload."})
+    if (currentUser == undefined || currentUser.cdn.allow == false) return res.status(401).json({ error: "You're not allowed to upload."})
     if (!req.files || Object.keys(req.files).length === 0) return res.status(400).json({ error: "No files were uploaded." } );
 
     let sampleFile = req.files.sampleFile;
