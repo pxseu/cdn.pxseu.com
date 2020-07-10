@@ -27,9 +27,7 @@ const userSchema = new Schema({
 	    type: String,
     	default: ""
     },
-    files: {
-      type: Array
-    }
+    files: [{fileName: String, fileLink: String}]
   }
 })
 

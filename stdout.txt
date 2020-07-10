@@ -1,2 +1,0 @@
-Listening on port: 8000
-Connected to database
