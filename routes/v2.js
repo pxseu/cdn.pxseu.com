@@ -23,26 +23,68 @@ router.post('/upload', async (req, res) => {
     let re = /(?:\.([^.]+))?$/;
     let ext = re.exec(sampleFile.name)[1];  
     const fileId = shortId.generate(); 
-    let link, file;
+    let url, file;
     if (ext == undefined){
         file = fileId;
-        link = 'http://' + req.get('host') + '/' + file;
+        url = 'http://' + req.get('host') + '/' + file;
     } else {
         file = fileId + '.' + ext;
-        link = 'http://' + req.get('host') + '/' + file;
+        url = 'http://' + req.get('host') + '/' + file;
     }
     sampleFile.mv('./cdn/' + file , function(err) {
         if (err) return res.status(500).send(err); 
-        let response = currentUser.name + ' uploaded a file! Link: ' + link;
-        res.json({ url : link })
+        let response = currentUser.name + ' uploaded a file! Link: ' + url;
+        res.json({ url })
         console.log(response);
     });
 
     User.updateOne({
         'cdn.token': token
     }, {
-        $push: { 'cdn.files': {fileName: sampleFile.name, fileLink: link} }
+        $push: { 'cdn.files' : {fileName: sampleFile.name, fileLink: url} }
     }).exec()
 });
   
+router.post('/delete', async (req, res) => {
+    let token = req.header("ApiToken");
+
+    if (token == undefined) return res.status(401).json({error: "No token was provided."})
+
+    let dbUser = await User.findOne({
+        'cdn.token': token
+    });
+
+    let file = req.query.fileUrl;
+
+    if (file == undefined) return res.send(404).json({ error: "No files url was listed." })
+
+    file = decodeURIComponent(file);
+    let parts = file.split('/');
+    let lastSegment = parts.pop() || parts.pop();
+
+    if (search(file, dbUser.cdn.files) == false) return res.status(404).json({ error: });
+    fs.unlink('./cdn/' + lastSegment, (err) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+        console.log('Removed: ' + lastSegment);
+        
+        User.updateOne({
+                'cdn.token': token
+            }, {
+                $pull: { 'cdn.files': { fileLink: file } }
+        }).exec()
+    })
+})
+
+function search(nameKey, myArray){
+    for (let i=0; i < myArray.length; i++) {
+        if (myArray[i].fileLink === nameKey) {
+            return true;
+        }
+    }
+    return false
+}
+
 module.exports = router

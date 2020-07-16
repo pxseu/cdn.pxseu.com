@@ -14,6 +14,9 @@ router.post('/upload', async (req, res) => {
     let origin = req.get('origin');
 
     let token = req.body.token;
+
+    if (token == undefined) return res.status(401).send("No token was provided.")
+
     const currentUser = await User.findOne({
         'cdn.token': token
     })
@@ -26,39 +29,48 @@ router.post('/upload', async (req, res) => {
     let re = /(?:\.([^.]+))?$/;
     let ext = re.exec(sampleFile.name)[1];  
     const fileId = shortId.generate(); 
-    let link, file;
+    let url, file;
     if (ext == undefined){
         file = fileId;
-        link = 'http://' + req.get('host') + '/' + file;
+        url = 'http://' + req.get('host') + '/' + file;
     } else {
         file = fileId + '.' + ext;
-        link = 'http://' + req.get('host') + '/' + file;
+        url = 'http://' + req.get('host') + '/' + file;
     }
     sampleFile.mv('./cdn/' + file , function(err) {
         if (err) return res.status(500).send(err); 
-        let response = currentUser.name + ' uploaded a file! Link: ' + link;
-        res.redirect(origin + "/cdn/succes?link=" + encodeURIComponent(link))
+        let response = currentUser.name + ' uploaded a file! Link: ' + url;
+
+        if (req.accepts('html')) {
+            res.redirect(origin + "/cdn/succes?link=" + encodeURIComponent(url))
+            return;
+        }
+            
+        res.type('txt').send(`New file url: ${url}`);
+        
         console.log(response);
     });
 
     User.updateOne({
         'cdn.token': token
     }, {
-        $push: { 'cdn.files': {fileName: sampleFile.name, fileLink: link} }
+        $push: { 'cdn.files': {fileName: sampleFile.name, fileLink: url} }
     }).exec()
 });
   
 router.post('/delete', async (req, res) => {
-    let origin = req.get('origin');
-    let file = req.body.fileUrl;
-    file = decodeURIComponent(file);
-    let parts = file.split('/');
-    let lastSegment = parts.pop() || parts.pop();
     let token = req.body.token;
+
+    if (token == undefined) return res.status(401).send("No token was provided.")
 
     let dbUser = await User.findOne({
         'cdn.token': token
     });
+
+    let file = req.body.fileUrl;
+    file = decodeURIComponent(file);
+    let parts = file.split('/');
+    let lastSegment = parts.pop() || parts.pop();
 
     if (search(file, dbUser.cdn.files) == false) return res.sendStatus(401);
     fs.unlink('./cdn/' + lastSegment, (err) => {
@@ -69,14 +81,10 @@ router.post('/delete', async (req, res) => {
         console.log('Removed: ' + lastSegment);
         
         User.updateOne({
-            'cdn.token': token
-        }, {$pull: {
-            'cdn.files': {
-            fileLink: file
-            }
-        }
+                'cdn.token': token
+            }, {
+                $pull: { 'cdn.files': { fileLink: file } }
         }).exec()
-        res.redirect(origin + '/cdn/myfiles')
     })
 })
 
@@ -87,6 +95,6 @@ function search(nameKey, myArray){
         }
     }
     return false
-  }
+}
 
 module.exports = router
