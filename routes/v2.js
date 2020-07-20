@@ -34,15 +34,16 @@ router.post('/upload', async (req, res) => {
     sampleFile.mv('./cdn/' + file , function(err) {
         if (err) return res.status(500).send(err); 
         let response = currentUser.name + ' uploaded a file! Link: ' + url;
-        res.json({ url })
+    	await User.updateOne({
+        	'cdn.token': token
+    	}, {
+        	$push: { 'cdn.files' : {fileName: sampleFile.name, fileLink: url} }
+    	}).exec()
+        res.json({ succes: true, url })
         console.log(response);
     });
 
-    User.updateOne({
-        'cdn.token': token
-    }, {
-        $push: { 'cdn.files' : {fileName: sampleFile.name, fileLink: url} }
-    }).exec()
+
 });
   
 router.post('/delete', async (req, res) => {
@@ -68,14 +69,16 @@ router.post('/delete', async (req, res) => {
             console.error(err)
             return
         }
-        console.log('Removed: ' + lastSegment);
         
-        User.updateOne({
+        
+        await User.updateOne({
                 'cdn.token': token
             }, {
                 $pull: { 'cdn.files': { fileLink: file } }
-        }).exec()
-    })
+        }).exec();
+	console.log('Removed: ' + lastSegment);
+	res.json({ succes: true });
+    }) 
 })
 
 function search(nameKey, myArray){

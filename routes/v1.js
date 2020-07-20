@@ -51,7 +51,7 @@ router.post('/upload', async (req, res) => {
         console.log(response);
     });
 
-    User.updateOne({
+    await User.updateOne({
         'cdn.token': token
     }, {
         $push: { 'cdn.files': {fileName: sampleFile.name, fileLink: url} }
@@ -80,7 +80,7 @@ router.post('/delete', async (req, res) => {
         }
         console.log('Removed: ' + lastSegment);
         
-        User.updateOne({
+        await User.updateOne({
                 'cdn.token': token
             }, {
                 $pull: { 'cdn.files': { fileLink: file } }
