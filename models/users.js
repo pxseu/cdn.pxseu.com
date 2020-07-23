@@ -19,8 +19,7 @@ const userSchema = new Schema({
     allowPrivate: {
       type: Boolean,
       default: false,
-    },
-    created: [{url: String}]
+    }
   },
   cdn: {
     allow: {
@@ -30,8 +29,7 @@ const userSchema = new Schema({
     token: {
 	    type: String,
     	default: ""
-    },
-    files: [{fileName: String, fileLink: String}]
+    }
   }
 })
 

@@ -4,30 +4,42 @@ const router = express.Router()
 const shortId = require('shortid')
 const fs = require('fs');
 const User = require('../models/users')
+const Cdn = require('../models/cdn');
 
-router.get('/', (req, res) => {
-    res.redirect('/')
+router.get('/files', async (req, res) => {
+    let token = req.body.token || req.header("Authorization");
+
+    if (token == undefined) return res.status(401).json({ error: "No token was provided." });
+
+    const currentUser = await User.findOne({
+        'cdn.token': token
+    });
+
+    if (currentUser == undefined || currentUser.cdn.allow == false) return res.status(401).json({ error: "You're not allowed to use cdn." })
+
+    await Cdn.find({
+        userId: currentUser.id
+    }).then((data) => {
+        res.json(data)
+    })
 });
 
 
-router.post('/upload', async (req, res) => {
-    let origin = req.get('origin');
+router.post('/files', async (req, res) => {
+    let token = req.body.token || req.header("Authorization");
 
-    let token = req.body.token;
-
-    if (token == undefined) return res.status(401).send("No token was provided.")
+    if (token == undefined) return res.status(401).json({ error: "No token was provided." })
 
     const currentUser = await User.findOne({
         'cdn.token': token
     })
 
-    if (!origin.endsWith("localhost:5000")) return res.status(403).send("Use my websit mf")
-    if (currentUser ==undefined || currentUser.cdn.allow == false) return res.status(401).send("You're not allowed to upload.")
-    if (!req.files || Object.keys(req.files).length === 0) return res.status(400).send('No files were uploaded.');
+    if (currentUser == undefined || currentUser.cdn.allow == false) return res.status(401).json({ error: "You're not allowed to use cdn." })
+    if (!req.files || Object.keys(req.files).length === 0) return res.status(400).json({ error: 'No files were uploaded.' });
 
-    let sampleFile = req.files.sampleFile;
+    let uploadFile = req.files.uploadFile;
     let re = /(?:\.([^.]+))?$/;
-    let ext = re.exec(sampleFile.name)[1];  
+    let ext = re.exec(uploadFile.name)[1];  
     const fileId = shortId.generate(); 
     let url, file;
     if (ext == undefined){
@@ -37,64 +49,57 @@ router.post('/upload', async (req, res) => {
         file = fileId + '.' + ext;
         url = 'http://' + req.get('host') + '/' + file;
     }
-    sampleFile.mv('./cdn/' + file , function(err) {
-        if (err) return res.status(500).send(err); 
-        let response = currentUser.name + ' uploaded a file! Link: ' + url;
+    uploadFile.mv('./cdn/' + file , async (err) => {
+        if (err) return res.status(500).json({ error: err }); 
+        new Cdn({
+            userId: currentUser.id,
+            fileName: uploadFile.name,
+            fileUrl: file
+        }).save().then(() => {
+            let response = currentUser.name + ' uploaded a file! Link: ' + url;
 
-        if (req.accepts('html')) {
-            res.redirect(origin + "/cdn/succes?link=" + encodeURIComponent(url))
-            return;
-        }
+            if (req.accepts('json')) {
+                res.json({ success: true, url})
+                return;
+            }
+                
+            res.type('txt').send(`{ "success" : true, "url" : "${url}" }`);
             
-        res.type('txt').send(`New file url: ${url}`);
-        
-        console.log(response);
+            console.log(response);
+        })
     });
-
-    await User.updateOne({
-        'cdn.token': token
-    }, {
-        $push: { 'cdn.files': {fileName: sampleFile.name, fileLink: url} }
-    }).exec()
 });
   
-router.post('/delete', async (req, res) => {
-    let token = req.body.token;
+router.delete('/files', async (req, res) => {
+    let token = req.body.token || req.header("Authorization");
 
-    if (token == undefined) return res.status(401).send("No token was provided.")
+    if (token == undefined) return res.status(401).json({ error: "No token was provided."})
 
     let dbUser = await User.findOne({
         'cdn.token': token
     });
 
-    let file = req.body.fileUrl;
-    file = decodeURIComponent(file);
-    let parts = file.split('/');
-    let lastSegment = parts.pop() || parts.pop();
+    if (dbUser == undefined || dbUser.cdn.allow == false) return res.status(401).json({ error:"You're not allowed to use cdn."})
 
-    if (search(file, dbUser.cdn.files) == false) return res.sendStatus(401);
-    fs.unlink('./cdn/' + lastSegment, (err) => {
+    let file = await req.body.fileUrl;
+    
+    let fileInDb = await Cdn.findOne({
+        userId: dbUser.id,
+        fileUrl: file
+    })
+
+    if (!fileInDb) return res.status(404).json({error: "File not found."});
+    fs.unlink('./cdn/' + file, async (err) => {
         if (err) {
             console.error(err)
             return
         }
-        console.log('Removed: ' + lastSegment);
-        
-        await User.updateOne({
-                'cdn.token': token
-            }, {
-                $pull: { 'cdn.files': { fileLink: file } }
-        }).exec()
+        Cdn.deleteOne({
+            fileUrl: file
+        }).exec().then(() => {
+            res.json({ success: true, deletedUrl: file })
+        })
     })
 })
-
-function search(nameKey, myArray){
-    for (let i=0; i < myArray.length; i++) {
-        if (myArray[i].fileLink === nameKey) {
-            return true;
-        }
-    }
-    return false
-}
 
 module.exports = router

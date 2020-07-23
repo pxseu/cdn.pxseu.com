@@ -9,9 +9,9 @@ const favicon = require('serve-favicon')
 const mongoose = require('mongoose')
 const express = require('express')
 const path = require("path")
+const cors = require("cors")
 
 const cdnV1 = require("./routes/v1")
-const cdnV2 = require("./routes/v2")
 
 const app = express()
 
@@ -30,14 +30,15 @@ app.use(fileUpload());
 app.use(express.urlencoded({
   extended: false
 }))
+app.use(cors())
 
 app.use('/v1', cdnV1)
-app.use('/v2', cdnV2)
 app.use(favicon(__dirname + '/www/images/favicon.ico'));
 
 app.get('/', async (req, res)=> {
   if (req.accepts('html')) {
-    res.sendFile(__dirname + '/www/index.html')
+    res.sendFile(__dirname + '/www/index.html');
+    return;
   }
 
   if (req.accepts('json')) {
