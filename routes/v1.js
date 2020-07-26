@@ -41,13 +41,11 @@ router.post('/files', async (req, res) => {
     let re = /(?:\.([^.]+))?$/;
     let ext = re.exec(uploadFile.name)[1];  
     const fileId = shortId.generate(); 
-    let url, file;
+    let file;
     if (ext == undefined){
         file = fileId;
-        url = 'http://' + req.get('host') + '/' + file;
     } else {
         file = fileId + '.' + ext;
-        url = 'http://' + req.get('host') + '/' + file;
     }
     uploadFile.mv('./cdn/' + file , async (err) => {
         if (err) return res.status(500).json({ error: err }); 
@@ -56,14 +54,14 @@ router.post('/files', async (req, res) => {
             fileName: uploadFile.name,
             fileUrl: file
         }).save().then(() => {
-            let response = currentUser.name + ' uploaded a file! Link: ' + url;
+            let response = currentUser.name + ' uploaded a file! Link: ' + file;
 
             if (req.accepts('json')) {
-                res.json({ success: true, url})
+                res.json({ success: true, file})
                 return;
             }
                 
-            res.type('txt').send(`{ "success" : true, "url" : "${url}" }`);
+            res.type('txt').send(`{ "success" : true, "url" : "${file}" }`);
             
             console.log(response);
         })
