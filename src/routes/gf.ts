@@ -3,7 +3,6 @@ import { Router } from "express";
 const router = Router();
 
 const gfPaths = [
-	"peitho",
 	"cutie",
 	"honey",
 	"bunny",
@@ -16,7 +15,7 @@ const gfPaths = [
 
 router.use((req, res, next) => {
 	if (gfPaths.some((path) => `/${path}` == req.path)) {
-		return res.redirect(`/meAndHer.jpg${req.query}`);
+		return res.redirect(`/meAndHer.jpg`);
 	}
 	next();
 });

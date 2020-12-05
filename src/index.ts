@@ -64,7 +64,7 @@ app.use((req, res, next) => {
 			}`;
 
 			if (req.query.raw != undefined) {
-				res.sendFile(path);
+				res.sendFile(req.path, { root: "./cdn" });
 				return;
 			}
 
