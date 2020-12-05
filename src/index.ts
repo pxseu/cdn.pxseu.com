@@ -1,33 +1,23 @@
-require("dotenv").config();
+import fileUpload from "express-fileupload";
+import bodyParser from "body-parser";
+import favicon from "serve-favicon";
+import imageSize from "image-size";
+import mimeTypes from "mime-types";
+import { config } from "dotenv";
+import express from "express";
+import isbot from "isbot";
+import cors from "cors";
+import fs from "fs";
 
-const port = process.env.PORT || 5000;
-const errorPages = ["404_1.html", "404_2.html"];
+config();
+export const DEV_MODE = process.env.NODE_ENV != "production";
 
-const fileUpload = require("express-fileupload");
-const bodyParser = require("body-parser");
-const favicon = require("serve-favicon");
-const imageSize = require("image-size");
-const mongoose = require("mongoose");
-const mime = require("mime-types");
-const express = require("express");
-const isbot = require("isbot");
-const cors = require("cors");
-const fs = require("fs");
-
-const cdnV1 = require("./routes/v1");
-const gfDetector = require("./routes/gf");
+import cdnV1 from "./routes/v1";
+import gfDetector from "./routes/gf";
+import { connect } from "./db";
 
 const app = express();
-
-mongoose.connect(process.env.MONGODB_URI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-	useCreateIndex: true,
-});
-//start mongodb
-
-mongoose.connection.on("error", (error) => console.error(error));
-mongoose.connection.once("open", () => console.log("Connected to database"));
+const port = parseInt(process.env?.PORT) ?? 5000;
 
 app.set("view engine", "ejs");
 app.set("trust-proxy", 1);
@@ -37,11 +27,12 @@ app.use(fileUpload());
 app.use(
 	express.urlencoded({
 		extended: false,
-	})
+	}),
 );
 
 app.use("/v1", cdnV1);
 app.use(favicon(__dirname + "/www/images/favicon.ico"));
+app.use(gfDetector);
 
 app.get("/", async (req, res) => {
 	if (req.accepts("html")) {
@@ -57,12 +48,10 @@ app.get("/", async (req, res) => {
 	res.type("txt").send("Welcome to my cdn.");
 });
 
-app.use(gfDetector);
-
 app.use((req, res, next) => {
-	const path = `${__dirname}/cdn${req.path}`;
+	const path = `${__dirname}/../cdn${req.path}`;
 
-	fs.access(path, fs.F_OK, (err) => {
+	fs.access(path, (err) => {
 		if (err) {
 			next();
 			return;
@@ -76,12 +65,13 @@ app.use((req, res, next) => {
 				return;
 			}
 
-			const mimetype = mime.lookup(path);
-			let filetype = mimetype.match(/.*\//gi)[0];
+			const mimetype = mimeTypes.lookup(path);
+
+			let filetype = mimetype.toString().match(/.*\//gi)[0];
 			filetype = filetype.replace("/", "");
 
 			switch (filetype) {
-				case "image":
+				case "image": {
 					const dimensions = imageSize(path);
 
 					res.render("openGraph-image.ejs", {
@@ -91,19 +81,21 @@ app.use((req, res, next) => {
 						height: dimensions.height,
 					});
 					return;
+				}
 				//case "video":
 				//	res.render("openGraph-video.ejs", {
 				//		filePath: fullUrl,
 				//		fileType: mimetype,
 				//	});
 				//	return;
-				default:
-					res.sendFile(path);
+				default: {
+					res.sendFile(req.path, { root: "./cdn" });
 					return;
+				}
 			}
 		}
 
-		res.sendFile(path);
+		res.sendFile(req.path, { root: "./cdn" });
 	});
 });
 
@@ -112,11 +104,7 @@ app.use((req, res) => {
 
 	// respond with html page
 	if (req.accepts("html")) {
-		res.sendFile(
-			__dirname +
-				"/www/errors/" +
-				errorPages[Math.floor(Math.random() * errorPages.length)]
-		);
+		res.sendFile(__dirname + "/www/errors/404.html");
 		return;
 	}
 
@@ -130,6 +118,9 @@ app.use((req, res) => {
 	res.type("txt").send("Not found");
 });
 
-app.listen(port, "localhost", () => {
-	console.log("Listening on port: " + port);
-});
+(async () => {
+	await connect();
+	app.listen(port, () => {
+		console.log("> Listening on port: " + port);
+	});
+})();

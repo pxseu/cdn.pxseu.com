@@ -1,4 +1,6 @@
-const router = require("express").Router();
+import { Router } from "express";
+
+const router = Router();
 
 const gfPaths = [
 	"peitho",
@@ -19,4 +21,4 @@ router.use((req, res, next) => {
 	next();
 });
 
-module.exports = router;
+export default router;
