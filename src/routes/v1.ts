@@ -1,6 +1,6 @@
 import { Router } from "express";
 import fs from "fs";
-import shortId from "shortId";
+import shortId from "shortid";
 
 import User, { UserType } from "../db/models/user";
 import Cdn from "../db/models/cdn";
