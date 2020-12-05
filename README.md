@@ -6,7 +6,7 @@
 
 ### About
 
-This repo contains the full content of my website for free! (under a license)
+This repo contains the full content of file uploader for free!
 Please check it out and contribute if you wish to do so!
 
 ### Installation
@@ -14,24 +14,22 @@ Please check it out and contribute if you wish to do so!
 The website requires [Node.js](https://nodejs.org/) v14+ to run.
 
 Install the dependencies and devDependencies and start the server.
-To use it to it's full potential it requires a [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) and a [MongoDB](https://www.mongodb.com/) database.
+To use it to it's full potential it requires a [MongoDB](https://www.mongodb.com/) database.
 For development use:
 
 ```sh
 $ nano .env
-WEBHOOK = (Your webhook token.)
 MONGODB_URI = (Your database.)
-$ npm install
-$ npm run dev
+$ npm install # or yarn
+$ npm run dev # or yarn dev
 ```
 
 And for production please do:
 
 ```sh
 $ nano .env
-WEBHOOK = (Your webhook token.)
 MONGODB_URI = (Your database.)
-$ npm install
-$ npm run deploy
-$ npm run prod
+$ npm install # or yarn
+$ npm run deploy # or yarn deploy
+$ npm run prod # or yarn prod
 ```
