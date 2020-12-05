@@ -19,8 +19,9 @@ import { connect } from "./db";
 const app = express();
 const port = parseInt(process.env?.PORT) ?? 5000;
 
-app.set("view engine", "ejs");
 app.set("trust-proxy", 1);
+app.set("views", "./dist/views");
+app.set("view engine", "ejs");
 app.use(cors());
 app.use(bodyParser.json());
 app.use(fileUpload());
@@ -57,8 +58,10 @@ app.use((req, res, next) => {
 			return;
 		}
 
-		if (isbot(req.get("user-agent"))) {
-			const fullUrl = `${req.protocol}://${req.get("host")}${req.path}`;
+		if (isbot(req.headers["user-agent"])) {
+			const fullUrl = `http${DEV_MODE ? "" : "s"}://${req.get("host")}${
+				req.path
+			}`;
 
 			if (req.query.raw != undefined) {
 				res.sendFile(path);
@@ -74,7 +77,7 @@ app.use((req, res, next) => {
 				case "image": {
 					const dimensions = imageSize(path);
 
-					res.render("openGraph-image.ejs", {
+					res.render("openGraph-image", {
 						filePath: fullUrl,
 						fileType: mimetype,
 						width: dimensions.width,
