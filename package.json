@@ -10,7 +10,7 @@
 		"deploy": "yarn build && yarn copy",
 		"build": "rimraf dist && tsc",
 		"lint": "eslint . --ext .ts",
-		"copy": "ts-node copy.ts"
+		"copy": "ts-node init.ts"
 	},
 	"author": "",
 	"license": "MPL-2.0",

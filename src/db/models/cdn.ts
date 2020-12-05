@@ -6,6 +6,7 @@ export type cdnDocument = Document & {
 	userId: number;
 	fileName: string;
 	fileUrl: string;
+	uploadDate: number;
 };
 
 const cdnSchema = new Schema({
@@ -17,6 +18,10 @@ const cdnSchema = new Schema({
 	},
 	fileUrl: {
 		type: String,
+	},
+	uploadDate: {
+		type: Number,
+		default: Date.now(),
 	},
 });
 
