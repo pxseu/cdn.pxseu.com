@@ -7,6 +7,12 @@ import { DEV_MODE } from "..";
 
 const router = Router();
 
+router.use((req, res, next) => {
+	if (DEV_MODE || req.hostname == "cdn.pxseu.com") return next();
+
+	res.status(400).json({ error: "Invalid domain. Please use (cdn.pxseu.com)" });
+});
+
 router.get("/files", checkAuth, async (req, res) => {
 	Cdn.find({
 		userId: req.auth.id,
@@ -23,16 +29,12 @@ router.post("/files", checkAuth, async (req, res) => {
 	const re = /(?:\.([^.]+))?$/;
 	const ext = re.exec(uploadFile.name)[1];
 	const fileId = shortId.generate();
-	let file: string;
-	if (ext == undefined) {
-		file = fileId;
-	} else {
-		file = fileId + "." + ext;
-	}
+	const file = `${fileId}${ext == undefined ? "" : `.${ext}`}`;
+
 	uploadFile.mv("./cdn/" + file, async (err) => {
 		if (err) {
 			console.error(err);
-			return res.status(500).json({ success: false });
+			return res.status(500).json({ success: false, error: "Internal server error." });
 		}
 		try {
 			await Cdn.create({
@@ -71,12 +73,13 @@ router.delete("/files", checkAuth, async (req, res) => {
 		fileUrl: file,
 	});
 
-	if (!fileInDb) return res.status(404).json({ error: "File not found." });
+	if (!fileInDb) return res.status(404).json({ success: false, error: "File not found." });
 	fs.unlink("./cdn/" + file, async (err) => {
 		if (err) {
 			console.error(err);
 			res.status(500).json({
 				success: false,
+				error: "Internal server error.",
 			});
 			return;
 		}
@@ -89,6 +92,7 @@ router.delete("/files", checkAuth, async (req, res) => {
 router.use((_, res) => {
 	res.status(404).json({
 		success: false,
+		error: "Not found.",
 	});
 });
 
@@ -97,14 +101,15 @@ export default router;
 async function checkAuth(req: Request, res: Response, next: NextFunction) {
 	const token = req.body.token || req.header("Authorization");
 
-	if (token == undefined) return res.status(401).json({ error: "No token was provided." });
+	if (token == undefined)
+		return res.status(401).json({ success: false, error: "No token was provided." });
 
 	const dbUser = (await User.findOne({
 		"cdn.token": token,
 	})) as UserType;
 
 	if (dbUser == undefined || dbUser.cdn.allow == false)
-		return res.status(401).json({ error: "You're not allowed to use cdn." });
+		return res.status(401).json({ success: false, error: "You're not allowed to use cdn." });
 
 	req.auth = dbUser;
 	next();

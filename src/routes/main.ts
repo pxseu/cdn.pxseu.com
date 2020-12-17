@@ -35,9 +35,7 @@ router.use((req, res, next) => {
 			return;
 		}
 
-		const fullUrl = `http${DEV_MODE ? "" : "s"}://${req.get("host")}${
-			req.path
-		}`;
+		const fullUrl = `http${DEV_MODE ? "" : "s"}://${req.get("host")}${req.path}`;
 
 		const mimetype = mimeTypes.lookup(path);
 
