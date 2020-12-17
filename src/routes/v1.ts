@@ -3,9 +3,11 @@ import fs from "fs";
 import shortId from "shortid";
 import User, { UserType } from "../db/models/user";
 import Cdn from "../db/models/cdn";
+import fetch from "node-fetch";
 import { DEV_MODE } from "..";
 
 const router = Router();
+const CF_BASE_URL = "https://api.cloudflare.com/client/v4";
 
 router.use((req, res, next) => {
 	if (DEV_MODE || req.hostname == "cdn.pxseu.com") return next();
@@ -83,8 +85,14 @@ router.delete("/files", checkAuth, async (req, res) => {
 			});
 			return;
 		}
-		fileInDb.deleteOne().then(() => {
-			res.json({ success: true, deletedUrl: file });
+		fileInDb.deleteOne().then(async () => {
+			const cfCache = await purgeCache(file);
+
+			res.json({
+				success: true,
+				deletedUrl: file,
+				cachePurged: cfCache.success,
+			});
 		});
 	});
 });
@@ -113,4 +121,22 @@ async function checkAuth(req: Request, res: Response, next: NextFunction) {
 
 	req.auth = dbUser;
 	next();
+}
+
+async function purgeCache(file: string) {
+	const response = await fetch(`${CF_BASE_URL}/zones/${process.env.CF_ZONE}/purge_cache`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${process.env.CF_API}`,
+		},
+		redirect: "follow",
+		body: JSON.stringify({ files: [`https://cdn.pxseu.com/${file}`] }),
+	});
+	const resJson = await response.json();
+	console.log("\n>> CLOUDFLARE_API_RESPONSE");
+	console.log(resJson);
+	console.log(">> END CLOUDFLARE_API_RESPONSE\n");
+
+	return resJson;
 }
