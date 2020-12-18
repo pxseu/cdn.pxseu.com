@@ -24,7 +24,7 @@
 		"express-fileupload": "^1.1.7-alpha.3",
 		"helmet": "^4.2.0",
 		"image-size": "^0.9.1",
-		"isbot": "^3.0.13",
+		"isbot": "^3.0.20",
 		"mime-types": "^2.1.27",
 		"mongoose": "^5.9.18",
 		"morgan": "^1.10.0",
