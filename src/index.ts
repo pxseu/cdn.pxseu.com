@@ -2,7 +2,7 @@ import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
 import favicon from "serve-favicon";
 import { config } from "dotenv";
-import express from "express";
+import express, { Request } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -12,10 +12,12 @@ import { connect } from "./db";
 import mainRouter from "./routes/main";
 
 config();
-export const DEV_MODE = process.env.NODE_ENV != "production";
-
-const app = express();
 const port = parseInt(process.env?.PORT) ?? 5000;
+const app = express();
+
+export const DEV_MODE = process.env.NODE_ENV != "production";
+export const CDN_BASE_URL = (req: Request): string =>
+	DEV_MODE ? `${req.hostname}${port}` : process.env.CDN_BASE_URL ?? req.hostname;
 
 app.set("trust-proxy", 1);
 app.set("views", "./dist/views");

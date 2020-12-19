@@ -3,16 +3,15 @@ import fs from "fs";
 import shortId from "shortid";
 import User, { UserType } from "../db/models/user";
 import Cdn from "../db/models/cdn";
-import fetch from "node-fetch";
-import { DEV_MODE } from "..";
+import purgeCache from "../modules/cloudflare/purge";
+import { CDN_BASE_URL, DEV_MODE } from "..";
 
 const router = Router();
-const CF_BASE_URL = "https://api.cloudflare.com/client/v4";
 
 router.use((req, res, next) => {
-	if (DEV_MODE || req.hostname == "cdn.pxseu.com") return next();
+	if (DEV_MODE || req.hostname == CDN_BASE_URL(req)) return next();
 
-	res.status(400).json({ error: "Invalid domain. Please use (cdn.pxseu.com)" });
+	res.status(400).json({ error: `Invalid domain. Please use (${CDN_BASE_URL(req)})` });
 });
 
 router.get("/files", checkAuth, async (req, res) => {
@@ -86,7 +85,7 @@ router.delete("/files", checkAuth, async (req, res) => {
 			return;
 		}
 		fileInDb.deleteOne().then(async () => {
-			const cfCache = await purgeCache(file);
+			const cfCache = await purgeCache(file, CDN_BASE_URL(req));
 
 			res.json({
 				success: true,
@@ -121,22 +120,4 @@ async function checkAuth(req: Request, res: Response, next: NextFunction) {
 
 	req.auth = dbUser;
 	next();
-}
-
-async function purgeCache(file: string) {
-	const response = await fetch(`${CF_BASE_URL}/zones/${process.env.CF_ZONE}/purge_cache`, {
-		method: "DELETE",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${process.env.CF_API}`,
-		},
-		redirect: "follow",
-		body: JSON.stringify({ files: [`https://cdn.pxseu.com/${file}`] }),
-	});
-	const resJson = await response.json();
-	console.log("\n>> CLOUDFLARE_API_RESPONSE");
-	console.log(resJson);
-	console.log(">> END CLOUDFLARE_API_RESPONSE\n");
-
-	return resJson;
 }
