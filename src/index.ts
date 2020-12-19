@@ -58,9 +58,6 @@ app.use(
 	})
 );
 
-app.use("/v1", cdnV1);
-app.use(gfDetector);
-
 app.use((_, res, next) => {
 	res.set("X-CUM", "sticky");
 	res.set("X-pxseu", "cute");
@@ -68,6 +65,9 @@ app.use((_, res, next) => {
 	res.set("X-JelNiSlaw", "menel");
 	next();
 });
+
+app.use("/v1", cdnV1);
+app.use(gfDetector);
 
 app.use((req, res, next) => {
 	if (req.method == "GET") {
