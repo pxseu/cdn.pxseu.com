@@ -6,10 +6,10 @@ import express, { Request } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import cdnV1 from "./routes/v1";
-import gfDetector from "./routes/gf";
+import cdnV2 from "./routes/v2";
 import { connect } from "./db";
 import mainRouter from "./routes/main";
+import { codes } from "./utils/httpCodesMap";
 
 config();
 const port = parseInt(process.env?.PORT) ?? 5000;
@@ -66,8 +66,17 @@ app.use((_, res, next) => {
 	next();
 });
 
-app.use("/v1", cdnV1);
-app.use(gfDetector);
+app.use("/v1", (_, res) => {
+	res.status(301).json({
+		success: false,
+		data: {
+			message: codes.get(res.statusCode),
+			newUrl: "/v2",
+		},
+	});
+});
+
+app.use("/v2", cdnV2);
 
 app.use((req, res, next) => {
 	if (req.method == "GET") {
@@ -94,13 +103,19 @@ app.use((req, res) => {
 	}
 
 	// respond with json
+
 	if (req.accepts("json")) {
-		res.send({ error: "Not found" });
+		res.status(404).json({
+			success: false,
+			data: {
+				message: codes.get(res.statusCode),
+			},
+		});
 		return;
 	}
 
 	// default to plain-text. send()
-	res.type("txt").send("Not found");
+	res.type("txt").send(codes.get(res.statusCode));
 });
 
 (async () => {

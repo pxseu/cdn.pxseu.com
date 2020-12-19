@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { access } from "fs";
 import isbot from "isbot";
-import imageSize from "image-size";
 import mimeTypes from "mime-types";
 import { DEV_MODE } from "..";
 
@@ -14,11 +13,11 @@ router.get("/", async (req, res) => {
 	}
 
 	if (req.accepts("json")) {
-		res.send({ hi: "Welcome to my cdn. :))))" });
+		res.json({ success: true, status: res.statusCode, data: { message: "Hi!" } });
 		return;
 	}
 
-	res.type("txt").send("Welcome to my cdn.");
+	res.type("txt").send("Hi!");
 });
 
 router.use((req, res, next) => {
@@ -31,6 +30,7 @@ router.use((req, res, next) => {
 		}
 
 		if (!isbot(req.headers["user-agent"]) || req.query.raw != undefined) {
+			res.set("x-cdn", "pxseu");
 			res.sendFile(req.path, { root: "./cdn" });
 			return;
 		}
@@ -44,13 +44,9 @@ router.use((req, res, next) => {
 
 		switch (filetype) {
 			case "image": {
-				const dimensions = imageSize(path);
-
+				res.set("x-cdn", "pxseu");
 				res.render("openGraph-image", {
 					filePath: fullUrl,
-					fileType: mimetype,
-					width: dimensions.width,
-					height: dimensions.height,
 				});
 				return;
 			}
@@ -61,6 +57,7 @@ router.use((req, res, next) => {
 			//	});
 			//	return;
 			default: {
+				res.set("x-cdn", "pxseu");
 				res.sendFile(req.path, { root: "./cdn" });
 				return;
 			}
