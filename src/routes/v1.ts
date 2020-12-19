@@ -96,6 +96,17 @@ router.delete("/files", checkAuth, async (req, res) => {
 	});
 });
 
+router.get("/", (_, res) => {
+	const routes: string[] = [];
+
+	router.stack.forEach((c) => {
+		if (!c.route) return;
+		routes.push(`${Object.keys(c.route.methods).map((m) => m.toUpperCase())} ${c.route.path}`);
+	});
+
+	res.json({ success: true, routes });
+});
+
 router.use((_, res) => {
 	res.status(404).json({
 		success: false,
