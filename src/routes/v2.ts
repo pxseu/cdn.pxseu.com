@@ -66,7 +66,7 @@ router.post("/files", checkAuth, async (req, res) => {
 				status: res.statusCode,
 				data: {
 					file,
-					url: `http${DEV_MODE ? "" : "s"}://${req.hostname}/${file} uwu`,
+					url: `http${DEV_MODE ? "" : "s"}://${req.hostname}/${file}#uwu`,
 				},
 			};
 			if (req.accepts("json")) {
