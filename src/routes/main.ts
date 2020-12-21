@@ -23,11 +23,11 @@ router.get("/", domainCheck, async (req, res) => {
 });
 
 router.use("/v1", domainCheck, (_, res) => {
-	res.status(301).json({
+	res.status(400).json({
 		success: false,
 		data: {
 			message: codes.get(res.statusCode),
-			newUrl: "/v2",
+			error: "Depracated",
 		},
 	});
 });
