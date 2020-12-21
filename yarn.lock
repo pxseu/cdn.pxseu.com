@@ -101,10 +101,10 @@
   dependencies:
     "@types/express" "*"
 
-"@types/express-fileupload@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@types/express-fileupload/-/express-fileupload-1.1.5.tgz#dc8a971f9060d50b12e3908a09248f1772e99484"
-  integrity sha512-03U+jevC01fzqxh7GlvfbEem0ICnp+hDLdtnMU7SNbIcdpe7LnFYkZLjycCQpwE9bY0PaBbLxG4gPyUWucaFjw==
+"@types/express-fileupload@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@types/express-fileupload/-/express-fileupload-1.1.6.tgz#fdc3b1d6f54fe4522867f8550f0acf24bcbf5c45"
+  integrity sha512-8z92PCVgvWvG1TpxucRU9oRz3hZc5cUz+CkeDe4XwVmg2DJDdd/7QASMsJzIo+9Pbfp7LfTEWSeEFUJZBohv9g==
   dependencies:
     "@types/express" "*"
 
