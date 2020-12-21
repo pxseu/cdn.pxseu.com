@@ -6,18 +6,16 @@ import express, { Request } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import cdnV2 from "./routes/v2";
 import { connect } from "./db";
 import mainRouter from "./routes/main";
-import { codes } from "./utils/httpCodesMap";
 
 config();
-const port = parseInt(process.env?.PORT) ?? 5000;
+export const PORT = parseInt(process.env?.PORT) ?? 5000;
 const app = express();
 
 export const DEV_MODE = process.env.NODE_ENV != "production";
 export const CDN_BASE_URL = (req: Request): string =>
-	DEV_MODE ? `${req.hostname}${port}` : process.env.CDN_BASE_URL ?? req.hostname;
+	DEV_MODE ? `${/* req.hostname */ "localhost"}` : process.env.CDN_BASE_URL ?? req.hostname;
 
 app.set("trust-proxy", 1);
 app.set("views", "./dist/views");
@@ -66,18 +64,6 @@ app.use((_, res, next) => {
 	next();
 });
 
-app.use("/v1", (_, res) => {
-	res.status(301).json({
-		success: false,
-		data: {
-			message: codes.get(res.statusCode),
-			newUrl: "/v2",
-		},
-	});
-});
-
-app.use("/v2", cdnV2);
-
 app.use((req, res, next) => {
 	if (req.method == "GET") {
 		res.set("Cache-control", `public, max-age=${365 * 24 * 60 * 60}`);
@@ -91,36 +77,9 @@ app.use((req, res, next) => {
 app.use(favicon(__dirname + "/www/images/favicon.ico"));
 app.use(mainRouter);
 
-app.use((req, res) => {
-	res.set("Cache-control", `no-store`);
-
-	res.status(404);
-
-	// respond with html page
-	if (req.accepts("html")) {
-		res.sendFile(__dirname + "/www/errors/404.html");
-		return;
-	}
-
-	// respond with json
-
-	if (req.accepts("json")) {
-		res.status(404).json({
-			success: false,
-			data: {
-				message: codes.get(res.statusCode),
-			},
-		});
-		return;
-	}
-
-	// default to plain-text. send()
-	res.type("txt").send(codes.get(res.statusCode));
-});
-
 (async () => {
 	await connect();
-	app.listen(port, () => {
-		console.log("> Listening on port: " + port);
+	app.listen(PORT, () => {
+		console.log("> Listening on port: " + PORT);
 	});
 })();

@@ -1,12 +1,14 @@
-import { Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import { access } from "fs";
 import isbot from "isbot";
 import mimeTypes from "mime-types";
-import { DEV_MODE } from "..";
+import { CDN_BASE_URL, DEV_MODE, PORT } from "..";
+import { codes } from "../utils/httpCodesMap";
+import cdnV2 from "./v2";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/", domainCheck, async (req, res) => {
 	if (req.accepts("html")) {
 		res.sendFile("/index.html", { root: "./dist/www" });
 		return;
@@ -19,6 +21,18 @@ router.get("/", async (req, res) => {
 
 	res.type("txt").send("Hi!");
 });
+
+router.use("/v1", domainCheck, (_, res) => {
+	res.status(301).json({
+		success: false,
+		data: {
+			message: codes.get(res.statusCode),
+			newUrl: "/v2",
+		},
+	});
+});
+
+router.use("/v2", domainCheck, cdnV2);
 
 router.use((req, res, next) => {
 	const path = `${__dirname}/../../cdn${req.path}`;
@@ -65,4 +79,45 @@ router.use((req, res, next) => {
 	});
 });
 
+router.use(domainCheck, (req, res) => {
+	res.set("Cache-control", `no-store`);
+
+	res.status(404);
+
+	// respond with html page
+	if (req.accepts("html")) {
+		res.sendFile("404.html", { root: "./dist/www/errors/" });
+		return;
+	}
+
+	// respond with json
+
+	if (req.accepts("json")) {
+		res.json({
+			success: false,
+			data: {
+				message: codes.get(res.statusCode),
+			},
+		});
+		return;
+	}
+
+	// default to plain-text. send()
+	res.type("txt").send(codes.get(res.statusCode));
+});
+
 export default router;
+
+function domainCheck(req: Request, res: Response, next: NextFunction) {
+	const base_url = CDN_BASE_URL(req);
+
+	if (req.hostname == base_url) {
+		next();
+		return;
+	}
+
+	res.redirect(
+		301,
+		`http${DEV_MODE ? "" : "s"}://${base_url}${DEV_MODE ? `:${PORT}` : ""}${req.path}`
+	);
+}
