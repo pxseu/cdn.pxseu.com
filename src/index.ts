@@ -17,7 +17,7 @@ export const DEV_MODE = process.env.NODE_ENV != "production";
 export const CDN_BASE_URL = (req: Request): string =>
 	DEV_MODE ? `${/* req.hostname */ "localhost"}` : process.env.CDN_BASE_URL ?? req.hostname;
 
-app.set("trust-proxy", 1);
+app.set("trust proxy", 1);
 app.set("views", "./dist/views");
 app.set("view engine", "ejs");
 app.use(cors());
