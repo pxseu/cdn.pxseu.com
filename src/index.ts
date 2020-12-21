@@ -20,8 +20,8 @@ app.set("trust proxy", 1);
 app.set("etag", "strong");
 app.set("views", "./dist/views");
 app.set("view engine", "ejs");
-app.use(cors());
 app.use(helmet());
+app.use(cors());
 app.use(morgan(DEV_MODE ? "dev" : "common"));
 
 app.use(
