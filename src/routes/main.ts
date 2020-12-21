@@ -22,6 +22,10 @@ router.get("/", domainCheck, async (req, res) => {
 	res.type("txt").send("Hi!");
 });
 
+router.get("/favicon.ico", (_, res) => {
+	res.sendFile("/favicon.ico", { root: "./dist/www/images/" });
+});
+
 router.use("/v1", domainCheck, (_, res) => {
 	res.status(400).json({
 		success: false,
@@ -44,7 +48,7 @@ router.use((req, res, next) => {
 		}
 
 		if (!isbot(req.headers["user-agent"]) || req.query.raw != undefined) {
-			res.set("x-cdn", "pxseu");
+			res.set("X-CDN", "pxseu");
 			res.sendFile(req.path, { root: "./cdn" });
 			return;
 		}
@@ -58,7 +62,7 @@ router.use((req, res, next) => {
 
 		switch (filetype) {
 			case "image": {
-				res.set("x-cdn", "pxseu");
+				res.set("X-CDN", "pxseu");
 				res.render("openGraph-image", {
 					filePath: fullUrl,
 				});
@@ -71,7 +75,7 @@ router.use((req, res, next) => {
 			//	});
 			//	return;
 			default: {
-				res.set("x-cdn", "pxseu");
+				res.set("X-CDN", "pxseu");
 				res.sendFile(req.path, { root: "./cdn" });
 				return;
 			}

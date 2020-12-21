@@ -1,6 +1,5 @@
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
-import favicon from "serve-favicon";
 import { config } from "dotenv";
 import express, { Request } from "express";
 import cors from "cors";
@@ -18,6 +17,7 @@ export const CDN_BASE_URL = (req: Request): string =>
 	DEV_MODE ? `${/* req.hostname */ "localhost"}` : process.env.CDN_BASE_URL ?? req.hostname;
 
 app.set("trust proxy", 1);
+app.set("etag", "strong");
 app.set("views", "./dist/views");
 app.set("view engine", "ejs");
 app.use(cors());
@@ -74,7 +74,6 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.use(favicon(__dirname + "/www/images/favicon.ico"));
 app.use(mainRouter);
 
 (async () => {
