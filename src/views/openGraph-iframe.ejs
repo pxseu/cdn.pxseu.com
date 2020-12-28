@@ -1,0 +1,42 @@
+<!-- you're not supposed to see this but yeah -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>cdn.pxseu.com</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				width: 100%;
+				background-color: black;
+			}
+			video {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				width: 100%;
+				height: auto;
+				max-height: 100%;
+				outline: none;
+			}
+			.video-content {
+				height: 100vh;
+			}
+
+			@media screen and (max-height: 320px) {
+				video {
+					height: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="video-content">
+			<video id="player" controls autoplay><source src="<%= filePath %>?raw=true" /></video>
+		</div>
+	</body>
+</html>

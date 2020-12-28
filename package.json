@@ -6,7 +6,7 @@
 	"scripts": {
 		"start": "node --trace-warnings .",
 		"prod": "cross-env NODE_ENV=production PORT=6002 yarn start",
-		"dev": "cross-env NODE_ENV=development PORT=8080 nodemon -e ts --exec \"yarn lint && yarn deploy && yarn start\"",
+		"dev": "cross-env NODE_ENV=development PORT=8080 nodemon --watch src -e \"ts ejs\" --exec \"yarn lint && yarn deploy && yarn start\"",
 		"deploy": "yarn build && yarn copy",
 		"build": "rimraf dist && tsc",
 		"lint": "eslint . --ext .ts",

@@ -69,6 +69,10 @@ router.use((req, res, next) => {
 				return;
 			}
 			case "video": {
+				if (req.query.iframe != undefined) {
+					res.render("openGraph-iframe", { filePath: fullUrl });
+					return;
+				}
 				res.render("openGraph-video.ejs", {
 					filePath: fullUrl,
 					fileType: mimetype,
