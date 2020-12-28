@@ -68,14 +68,19 @@ router.use((req, res, next) => {
 				});
 				return;
 			}
+
 			case "video": {
 				if (req.query.iframe != undefined) {
-					res.render("openGraph-iframe", { filePath: fullUrl });
+					/* turn off frameguard */
+					res.removeHeader("X-Frame-Options");
+					res.render("openGraph-iframe", {
+						filePath: fullUrl,
+					});
 					return;
 				}
+
 				res.render("openGraph-video.ejs", {
 					filePath: fullUrl,
-					fileType: mimetype,
 				});
 				return;
 			}
