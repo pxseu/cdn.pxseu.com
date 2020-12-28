@@ -68,12 +68,14 @@ router.use((req, res, next) => {
 				});
 				return;
 			}
-			//case "video":
-			//	res.render("openGraph-video.ejs", {
-			//		filePath: fullUrl,
-			//		fileType: mimetype,
-			//	});
-			//	return;
+			case "video": {
+				res.render("openGraph-video.ejs", {
+					filePath: fullUrl,
+					fileType: mimetype,
+				});
+				return;
+			}
+
 			default: {
 				res.set("X-CDN", "pxseu");
 				res.sendFile(req.path, { root: "./cdn" });
