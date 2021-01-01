@@ -59,7 +59,6 @@ app.use(
 app.use((_, res, next) => {
 	res.set("X-CUM", "sticky");
 	res.set("X-pxseu", "cute");
-	res.set("X-Peitho", "love <3");
 	res.set("X-JelNiSlaw", "menel");
 	next();
 });
