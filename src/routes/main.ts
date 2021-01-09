@@ -39,6 +39,10 @@ router.use("/v1", domainCheck, (_, res) => {
 router.use("/v2", domainCheck, cdnV2);
 
 router.use((req, res, next) => {
+	if (req.method.toUpperCase() === "GET") {
+		next();
+		return;
+	}
 	const path = `${__dirname}/../../cdn${req.path}`;
 
 	access(path, (err) => {
