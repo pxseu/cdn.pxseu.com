@@ -1,4 +1,4 @@
-# [cdn.pxseu.com](https://[cdn.pxseu.com)
+# [cdn.pxseu.com](https://cdn.pxseu.com)
 
 [![forthebadge](https://forthebadge.com/images/badges/contains-tasty-spaghetti-code.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-typescript.svg)](https://forthebadge.com)
