@@ -19,6 +19,8 @@ jobs:
                   key: ${{ secrets.KEY }}
                   port: ${{ secrets.PORT }}
                   script: |
+                      NVM_DIR=~/.nvm
+                      source ~/.nvm/nvm.sh
                       cd ~/deploy/${{ github.event.repository.name }}
                       git reset --hard
                       git pull
