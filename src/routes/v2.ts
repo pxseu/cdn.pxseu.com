@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
-import fs from "fs";
+import { promises as fs } from "fs";
 import shortId from "shortid";
 import User, { UserType } from "../db/models/user";
-import Cdn from "../db/models/cdn";
+import Cdn, { cdnDocument } from "../db/models/cdn";
 import purgeCache from "../modules/cloudflare/purge";
 import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
@@ -25,11 +25,11 @@ router.use((req, res, next) => {
 });
 
 router.get("/files", checkAuth, async (req, res) => {
-	Cdn.find({
+	const files = (await Cdn.find({
 		userId: req.auth.id,
-	}).then((files) => {
-		res.json({ success: true, status: res.statusCode, data: { files } });
-	});
+	})) as cdnDocument[];
+
+	res.json({ success: true, status: res.statusCode, data: { files } });
 });
 
 router.post("/files", checkAuth, async (req, res) => {
@@ -40,51 +40,45 @@ router.post("/files", checkAuth, async (req, res) => {
 			data: { message: codes.get(res.statusCode), error: "No fies provided." },
 		});
 
-	const uploadFile = req.files.uploadFile ?? req.files.file;
+	let uploadFile = req.files.uploadFile ?? req.files.file;
+	if (Array.isArray(uploadFile)) {
+		uploadFile = uploadFile[0];
+	}
 	const re = /(?:\.([^.]+))?$/;
 	const ext = re.exec(uploadFile.name)[1];
 	const fileId = shortId.generate();
 	const file = `${fileId}${ext == undefined ? "" : `.${ext}`}`;
 
-	uploadFile.mv("./cdn/" + file, async (err) => {
-		if (err) {
-			console.error(err);
-			return res.status(500).json({
-				success: false,
-				status: res.statusCode,
-				data: { message: codes.get(res.statusCode) },
-			});
+	try {
+		await uploadFile.mv(`./cdn/${file}`);
+		await Cdn.create({
+			userId: req.auth.id,
+			fileName: uploadFile.name,
+			fileUrl: file,
+		});
+		const resdata = {
+			success: true,
+			status: res.statusCode,
+			data: {
+				file,
+				url: `http${DEV_MODE ? "" : "s"}://${req.hostname}/${file}#uwu`,
+			},
+		};
+		if (req.accepts("json")) {
+			res.json(resdata);
+			return;
 		}
-		try {
-			await Cdn.create({
-				userId: req.auth.id,
-				fileName: uploadFile.name,
-				fileUrl: file,
-			});
-			const resdata = {
-				success: true,
-				status: res.statusCode,
-				data: {
-					file,
-					url: `http${DEV_MODE ? "" : "s"}://${req.hostname}/${file}#uwu`,
-				},
-			};
-			if (req.accepts("json")) {
-				res.json(resdata);
-				return;
-			}
 
-			res.type("txt").send(JSON.stringify(resdata));
-		} catch (e) {
-			res.status(500).json({
-				success: false,
-				status: res.statusCode,
-				data: {
-					message: codes.get(res.statusCode),
-				},
-			});
-		}
-	});
+		res.type("txt").send(JSON.stringify(resdata));
+	} catch (e) {
+		res.status(500).json({
+			success: false,
+			status: res.statusCode,
+			data: {
+				message: codes.get(res.statusCode),
+			},
+		});
+	}
 });
 
 router.delete("/files", checkAuth, async (req, res) => {
@@ -101,31 +95,31 @@ router.delete("/files", checkAuth, async (req, res) => {
 			status: res.statusCode,
 			data: { message: codes.get(res.statusCode) },
 		});
-	fs.unlink("./cdn/" + file, async (err) => {
-		if (err) {
-			console.error(err);
-			res.status(500).json({
-				success: false,
-				status: res.statusCode,
-				data: {
-					message: codes.get(res.statusCode),
-				},
-			});
-			return;
-		}
-		fileInDb.deleteOne().then(async () => {
-			const cfCache = await purgeCache(file, CDN_BASE_URL(req));
+	try {
+		await fs.unlink(`./cdn/${file}`);
 
-			res.json({
-				success: true,
-				status: res.statusCode,
-				data: {
-					deletedUrl: file,
-					cachePurged: cfCache.success,
-				},
-			});
+		await fileInDb.deleteOne();
+
+		const cfCache = await purgeCache(file, CDN_BASE_URL(req));
+
+		res.json({
+			success: true,
+			status: res.statusCode,
+			data: {
+				deletedUrl: file,
+				cachePurged: cfCache.success,
+			},
 		});
-	});
+	} catch (e) {
+		res.status(500).json({
+			success: false,
+			status: res.statusCode,
+			data: {
+				message: codes.get(res.statusCode),
+			},
+		});
+		return;
+	}
 });
 
 router.get("/", (_, res) => {
