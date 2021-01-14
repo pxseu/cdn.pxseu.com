@@ -59,6 +59,7 @@ router.post("/files", checkAuth, async (req, res) => {
 				message: `Invalid domain in the domain filed. Should match: "${domainRegex}"`,
 			},
 		});
+		return;
 	}
 
 	try {
