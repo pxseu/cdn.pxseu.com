@@ -44,10 +44,11 @@ router.post("/files", checkAuth, async (req, res) => {
 	if (Array.isArray(uploadFile)) {
 		uploadFile = uploadFile[0];
 	}
-	const re = /(?:\.([^.]+))?$/;
-	const ext = re.exec(uploadFile.name)[1];
-	const fileId = shortId.generate();
-	const file = `${fileId}${ext == undefined ? "" : `.${ext}`}`;
+	const re = /(?:\.([^.]+))?$/,
+		ext = re.exec(uploadFile.name)[1],
+		fileId = shortId.generate(),
+		file = `${fileId}${ext == undefined ? "" : `.${ext}`}`,
+		domain = encodeURI(String(req.body.domain)) ?? CDN_BASE_URL(req);
 
 	try {
 		await uploadFile.mv(`./cdn/${file}`);
@@ -55,13 +56,14 @@ router.post("/files", checkAuth, async (req, res) => {
 			userId: req.auth.id,
 			fileName: uploadFile.name,
 			fileUrl: file,
+			domain,
 		});
 		const resdata = {
 			success: true,
 			status: res.statusCode,
 			data: {
 				file,
-				url: `http${DEV_MODE ? "" : "s"}://${req.hostname}/${file}#uwu`,
+				url: `http${DEV_MODE ? "" : "s"}://${domain}/${file}#uwu`,
 			},
 		};
 		if (req.accepts("json")) {
@@ -147,7 +149,7 @@ export default router;
 
 async function checkAuth(req: Request, res: Response, next: NextFunction) {
 	const token = extractToken(req);
-	if (token == null)
+	if (!token)
 		return res.status(401).json({
 			success: false,
 			status: res.statusCode,
@@ -158,7 +160,7 @@ async function checkAuth(req: Request, res: Response, next: NextFunction) {
 		"cdn.token": token,
 	})) as UserType;
 
-	if (dbUser == undefined || dbUser.cdn.allow == false)
+	if (!dbUser || !dbUser.cdn.allow)
 		return res.status(401).json({
 			success: false,
 			status: res.statusCode,

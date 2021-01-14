@@ -7,17 +7,26 @@ export type cdnDocument = Document & {
 	fileName: string;
 	fileUrl: string;
 	uploadDate: number;
+	domain: string;
 };
 
 const cdnSchema = new Schema({
 	userId: {
 		type: Number,
+		required: true,
 	},
 	fileName: {
 		type: String,
+		required: true,
 	},
 	fileUrl: {
 		type: String,
+		required: true,
+	},
+	domain: {
+		type: String,
+		required: true,
+		default: "cdn.pxseu.com",
 	},
 	uploadDate: {
 		type: Number,
