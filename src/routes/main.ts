@@ -47,7 +47,7 @@ router.use((req, res, next) => {
 
 	let reqPath = String(req.path);
 	reqPath = reqPath.slice(1, reqPath.length);
-	const path = `${__dirname}/../../cdn${reqPath}`;
+	const path = `${__dirname}/../../cdn/${reqPath}`;
 
 	access(path, async (err) => {
 		if (err) {
@@ -57,7 +57,7 @@ router.use((req, res, next) => {
 
 		const fileInCdn = (await Cdn.findOne({ fileUrl: reqPath })) as cdnDocument;
 
-		if (fileInCdn && fileInCdn.domain != req.get("host")) {
+		if (!DEV_MODE && fileInCdn && fileInCdn.domain != req.get("host")) {
 			res.redirect(`http${DEV_MODE ? "" : "s"}://${fileInCdn.domain}/${reqPath}`);
 			return;
 		}
