@@ -69,6 +69,7 @@ router.use((req, res, next) => {
 				res.set("X-CDN", "pxseu");
 				res.render("openGraph-image", {
 					filePath: fullUrl,
+					domain: req.get("host"),
 				});
 				return;
 			}
@@ -79,12 +80,14 @@ router.use((req, res, next) => {
 					res.removeHeader("X-Frame-Options");
 					res.render("openGraph-iframe", {
 						filePath: fullUrl,
+						domain: req.get("host"),
 					});
 					return;
 				}
 
 				res.render("openGraph-video.ejs", {
 					filePath: fullUrl,
+					domain: req.get("host"),
 				});
 				return;
 			}
@@ -135,8 +138,5 @@ function domainCheck(req: Request, res: Response, next: NextFunction) {
 		return;
 	}
 
-	res.redirect(
-		301,
-		`http${DEV_MODE ? "" : "s"}://${base_url}${DEV_MODE ? `:${PORT}` : ""}${req.path}`
-	);
+	res.redirect(301, `http${DEV_MODE ? "" : "s"}://${base_url}${DEV_MODE ? `:${PORT}` : ""}${req.path}`);
 }
