@@ -8,6 +8,7 @@ import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
 
 const router = Router();
+const domainRegex = /^((([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.?)+loves\.moe|cdn\.pxseu\.com)$/gi;
 
 router.use((req, res, next) => {
 	res.set("Cache-control", `no-store`);
@@ -48,7 +49,17 @@ router.post("/files", checkAuth, async (req, res) => {
 		ext = re.exec(uploadFile.name)[1],
 		fileId = shortId.generate(),
 		file = `${fileId}${ext == undefined ? "" : `.${ext}`}`,
-		domain = encodeURI(String(req.body.domain)) ?? CDN_BASE_URL(req);
+		domain = String(req.body.domain) ?? CDN_BASE_URL(req);
+
+	if (!DEV_MODE && domainRegex.test(domain)) {
+		res.status(400).json({
+			success: false,
+			status: res.statusCode,
+			data: {
+				message: `Invalid domain in the domain filed. Should match: "${domainRegex}"`,
+			},
+		});
+	}
 
 	try {
 		await uploadFile.mv(`./cdn/${file}`);
