@@ -45,8 +45,8 @@ router.use((req, res, next) => {
 		return;
 	}
 
-	const reqPath = req.path;
-
+	let reqPath = String(req.path);
+	reqPath = reqPath.slice(1, reqPath.length);
 	const path = `${__dirname}/../../cdn${reqPath}`;
 
 	access(path, async (err) => {
