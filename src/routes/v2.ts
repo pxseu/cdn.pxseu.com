@@ -49,9 +49,10 @@ router.post("/files", checkAuth, async (req, res) => {
 		ext = re.exec(uploadFile.name)[1],
 		fileId = shortId.generate(),
 		file = `${fileId}${ext == undefined ? "" : `.${ext}`}`,
-		domain = String(req.body.domain) == "" ? CDN_BASE_URL(req) : String(req.body.domain);
+		domain = String(req.body.domain) == "" ? CDN_BASE_URL(req) : String(req.body.domain),
+		testDomain = domainRegex.test(domain);
 
-	if (!DEV_MODE && domainRegex.test(domain)) {
+	if (!DEV_MODE && testDomain) {
 		res.status(400).json({
 			success: false,
 			status: res.statusCode,
