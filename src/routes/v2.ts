@@ -56,7 +56,7 @@ router.post("/files", checkAuth, async (req, res) => {
 		domain = CDN_BASE_URL(req);
 	}
 
-	if (!DEV_MODE && testDomain) {
+	if (!DEV_MODE && !testDomain) {
 		res.status(400).json({
 			success: false,
 			status: res.statusCode,
