@@ -8,7 +8,7 @@ import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
 
 const router = Router();
-const domainRegex = /^((([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.?)+loves\.moe|cdn\.pxseu\.com)$/gi;
+const domainRegex = /^((([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.?)+loves\.moe|cdn\.pxseu\.com)$/i;
 
 router.use((req, res, next) => {
 	res.set("Cache-control", `no-store`);
