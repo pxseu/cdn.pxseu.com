@@ -21,7 +21,7 @@ type cfResponse = {
 
 const ConsoleMessage = (resJson: cfResponse) =>
 	DEV_MODE
-		? `\n>> CLOUDFLARE_API_RESPONSE\n${resJson}\n>> END CLOUDFLARE_API_RESPONSE\n`
+		? `\n>> CLOUDFLARE_API_RESPONSE\n${JSON.stringify(resJson)}\n>> END CLOUDFLARE_API_RESPONSE\n`
 		: `>> CLOUDFLARE_API_RESPONSE: PURGED: ${resJson.success}`;
 
 async function purgeCache(file: string, hostname: string): Promise<cfResponse> {

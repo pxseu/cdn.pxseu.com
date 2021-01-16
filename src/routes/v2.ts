@@ -52,7 +52,9 @@ router.post("/files", checkAuth, async (req, res) => {
 		file = `${fileId}${ext == undefined ? "" : `.${ext}`}`,
 		testDomain = domainRegex.test(domain);
 
-	if (domain == `${undefined}`) {
+	console.log(domain === `${undefined}`, domain === undefined);
+
+	if (!domain || domain === `${undefined}`) {
 		domain = CDN_BASE_URL(req);
 	}
 
