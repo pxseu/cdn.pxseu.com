@@ -8,7 +8,8 @@ import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
 
 const router = Router();
-const domainRegex = /^((([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.?)+loves\.moe|cdn\.pxseu\.com)$/i;
+const domainRegex = /^(([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.loves\.moe|cdn\.pxseu\.com)$/i;
+const lengthRegex = /\.{11,63}/;
 
 router.use((req, res, next) => {
 	res.set("Cache-control", `no-store`);
@@ -58,12 +59,24 @@ router.post("/files", checkAuth, async (req, res) => {
 		domain = CDN_BASE_URL(req);
 	}
 
+	if (!lengthRegex.test(domain)) {
+		res.status(400).json({
+			success: false,
+			status: res.statusCode,
+			data: {
+				message: codes.get(res.statusCode),
+				error: `The domain name was too long! Max 64 characters!"`,
+			},
+		});
+	}
+
 	if (!DEV_MODE && !testDomain) {
 		res.status(400).json({
 			success: false,
 			status: res.statusCode,
 			data: {
-				message: `Invalid domain in the domain filed. Should match: "${domainRegex}"`,
+				message: codes.get(res.statusCode),
+				error: `Invalid domain in the domain filed. Should match: "${domainRegex}"`,
 			},
 		});
 		return;
