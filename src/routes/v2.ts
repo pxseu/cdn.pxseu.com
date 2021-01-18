@@ -8,8 +8,8 @@ import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
 
 const router = Router();
-const domainRegex = /^(([a-z\d]|[a-z\d][a-z\d-]*[a-z\d])\.loves\.moe|cdn\.pxseu\.com)$/i;
-const lengthRegex = /\.{11,63}/;
+const domainRegex = /^(([a-z\d]|[a-z\d][a-z\d-]+[a-z\d])\.loves\.moe|cdn\.pxseu\.com)$/i;
+const maxLength = 63;
 
 router.use((req, res, next) => {
 	res.set("Cache-control", `no-store`);
@@ -53,21 +53,20 @@ router.post("/files", checkAuth, async (req, res) => {
 		file = `${fileId}${ext == undefined ? "" : `.${ext}`}`,
 		testDomain = domainRegex.test(domain);
 
-	console.log(domain === `${undefined}`, domain === undefined);
-
 	if (!domain || domain === `${undefined}`) {
 		domain = CDN_BASE_URL(req);
 	}
 
-	if (!lengthRegex.test(domain)) {
+	if (domain.length >= maxLength) {
 		res.status(400).json({
 			success: false,
 			status: res.statusCode,
 			data: {
 				message: codes.get(res.statusCode),
-				error: `The domain name was too long! Max 64 characters!"`,
+				error: `The domain name was too long! Max ${maxLength} characters!"`,
 			},
 		});
+		return;
 	}
 
 	if (!DEV_MODE && !testDomain) {
