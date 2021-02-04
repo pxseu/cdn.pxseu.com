@@ -37,7 +37,7 @@
 		"@types/mime-types": "^2.1.0",
 		"@types/mongoose": "^5.10.3",
 		"@types/morgan": "^1.9.2",
-		"@types/node": "^14.14.22",
+		"@types/node": "^14.14.24",
 		"@types/node-fetch": "^2.5.8",
 		"@types/serve-favicon": "^2.5.2",
 		"@types/shelljs": "^0.8.8",
