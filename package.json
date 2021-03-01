@@ -24,7 +24,7 @@
 		"express-fileupload": "^1.2.1",
 		"helmet": "^4.4.1",
 		"isbot": "^3.0.24",
-		"mime-types": "^2.1.28",
+		"mime-types": "^2.1.29",
 		"mongoose": "^5.11.18",
 		"morgan": "^1.10.0",
 		"node-fetch": "^2.6.1",
