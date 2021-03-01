@@ -829,10 +829,10 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-ejs@^3.1.5:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/ejs/-/ejs-3.1.5.tgz#aed723844dc20acb4b170cd9ab1017e476a0d93b"
-  integrity sha512-dldq3ZfFtgVTJMLjOe+/3sROTzALlL9E34V4/sDtUd/KlBSS0s6U1/+WPE1B4sj9CXHJpL1M6rhNJnc9Wbal9w==
+ejs@^3.1.6:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/ejs/-/ejs-3.1.6.tgz#5bfd0a0689743bb5268b3550cceeebbc1702822a"
+  integrity sha512-9lt9Zse4hPucPkoP7FHDF0LQAlGyF9JVpnClFLFH3aSSbxmyoqINRpp/9wePWJTUl4KOQwRL72Iw3InHPDkoGw==
   dependencies:
     jake "^10.6.1"
 
@@ -1453,10 +1453,10 @@ isarray@~1.0.0:
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
 
-isbot@^3.0.23:
-  version "3.0.23"
-  resolved "https://registry.yarnpkg.com/isbot/-/isbot-3.0.23.tgz#faceed482e1c7952a9b6c8a963a326ee859d7c3d"
-  integrity sha512-WrZLX9ilDBY2XpwUNCF0LD6kHkU4qQGWF3uv1PbmgxmDPfwBLC1d46GsZu1N1Kv3/2AyKn/TQZ0Qjkoxcuyfvw==
+isbot@^3.0.24:
+  version "3.0.24"
+  resolved "https://registry.yarnpkg.com/isbot/-/isbot-3.0.24.tgz#4841001305f72dc7862a2d2699e8b183bffeb90b"
+  integrity sha512-EmZlB6HjkwQI3f9hgN5JLVwEdNeLtsxc0MScR74mp0EIP7K9mrJFrYjwN8cwqNCcIFTGSXicNX13azlqxojyNQ==
 
 isexe@^2.0.0:
   version "2.0.0"
