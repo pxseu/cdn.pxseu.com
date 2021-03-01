@@ -23,7 +23,7 @@
 		"express": "^4.17.1",
 		"express-fileupload": "^1.2.1",
 		"helmet": "^4.4.1",
-		"isbot": "^3.0.23",
+		"isbot": "^3.0.24",
 		"mime-types": "^2.1.28",
 		"mongoose": "^5.11.18",
 		"morgan": "^1.10.0",
