@@ -6,7 +6,7 @@ export type cdnDocument = Document & {
 	userId: number;
 	fileName: string;
 	fileUrl: string;
-	uploadDate: number;
+	uploadDate?: number;
 	domain: string;
 };
 
@@ -34,4 +34,4 @@ const cdnSchema = new Schema({
 	},
 });
 
-export default mongoose.model("cdnFile", cdnSchema);
+export default mongoose.model<cdnDocument>("cdnFile", cdnSchema);

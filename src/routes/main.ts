@@ -3,7 +3,7 @@ import { access } from "fs";
 import isbot from "isbot";
 import mimeTypes from "mime-types";
 import { CDN_BASE_URL, DEV_MODE, PORT } from "..";
-import Cdn, { cdnDocument } from "../db/models/cdn";
+import Cdn from "../db/models/cdn";
 import { codes } from "../utils/httpCodesMap";
 import cdnV2 from "./v2";
 
@@ -55,7 +55,7 @@ router.use((req, res, next) => {
 			return;
 		}
 
-		const fileInCdn = (await Cdn.findOne({ fileUrl: reqPath })) as cdnDocument;
+		const fileInCdn = await Cdn.findOne({ fileUrl: reqPath });
 
 		if (!DEV_MODE && fileInCdn && fileInCdn.domain != req.get("host")) {
 			res.redirect(`http${DEV_MODE ? "" : "s"}://${fileInCdn.domain}/${reqPath}`);

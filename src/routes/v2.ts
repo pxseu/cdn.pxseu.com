@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { promises as fs } from "fs";
 import shortId from "shortid";
-import User, { UserType } from "../db/models/user";
-import Cdn, { cdnDocument } from "../db/models/cdn";
+import User from "../db/models/user";
+import Cdn from "../db/models/cdn";
 import purgeCache from "../modules/cloudflare/purge";
 import { CDN_BASE_URL, DEV_MODE } from "..";
 import { codes } from "../utils/httpCodesMap";
@@ -27,9 +27,9 @@ router.use((req, res, next) => {
 });
 
 router.get("/files", checkAuth, async (req, res) => {
-	const files = (await Cdn.find({
+	const files = await Cdn.find({
 		userId: req.auth.id,
-	})) as cdnDocument[];
+	});
 
 	res.json({ success: true, status: res.statusCode, data: { files } });
 });
@@ -187,9 +187,9 @@ async function checkAuth(req: Request, res: Response, next: NextFunction) {
 			data: { message: codes.get(res.statusCode) },
 		});
 
-	const dbUser = (await User.findOne({
+	const dbUser = await User.findOne({
 		"cdn.token": token,
-	})) as UserType;
+	});
 
 	if (!dbUser || !dbUser.cdn.allow)
 		return res.status(401).json({
